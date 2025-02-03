@@ -1,11 +1,9 @@
 
 
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-
+import { useSelector } from "react-redux";
 export default function PrivateRoute({ children }) {
-  const { isLoggedIn } = useAuth();
-
+  const  isLoggedIn = useSelector((state)=> state.auth.isLoggedIn) 
   if (isLoggedIn === null) {
     return <div>Loading...</div>;
   }

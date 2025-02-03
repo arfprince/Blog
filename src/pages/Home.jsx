@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useBlogs } from "../context/BlogsContext";
 import DisplayBlogsOnHome from "../components/DisplayBlogsOnHome";
+import { useSelector } from "react-redux";
 
 export default function Home() {
-  const { blogs } = useBlogs();
+  const  blogs = JSON.parse(JSON.stringify(useSelector((state)=> state.rootSlice.blogs)));
+  
   const [searchTerm, setSearchTerm] = useState("");
 
   const allPublicBlogs = Object.values(blogs)

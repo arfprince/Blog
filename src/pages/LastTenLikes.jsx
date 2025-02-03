@@ -1,20 +1,21 @@
-import { useLikedBlogs } from "../context/UsersLikedBlogContext";
-import RanderLiked from "../components/userElements/lastTenLikes/randerLiked";
 
+import { useDispatch, useSelector } from "react-redux";
+import RanderLiked from "../components/userElements/lastTenLikes/randerLiked";
 export default function LastTenLikes() {
+  const dispatch= useDispatch();
   let userLastTenLikedBlogs = [];
   const currentSessionUser = JSON.parse(
     localStorage.getItem("currentSessionUser")
   );
-  const { allUserslikedBlogs } = useLikedBlogs();
-
+  const allUsersLikedBlogs = useSelector((state)=> state.rootSlice.allUsersLikedBlogs);
+  
   if (
-    allUserslikedBlogs[currentSessionUser] &&
-    allUserslikedBlogs[currentSessionUser].length <= 10
+    allUsersLikedBlogs[currentSessionUser] &&
+    allUsersLikedBlogs[currentSessionUser].length <= 10
   ) {
-    userLastTenLikedBlogs = allUserslikedBlogs[currentSessionUser];
-  } else if (allUserslikedBlogs[currentSessionUser]) {
-    userLastTenLikedBlogs = allUserslikedBlogs[currentSessionUser].slice(-10);
+    userLastTenLikedBlogs = allUsersLikedBlogs[currentSessionUser];
+  } else if (allUsersLikedBlogs[currentSessionUser]) {
+    userLastTenLikedBlogs = allUsersLikedBlogs[currentSessionUser].slice(-10);
   }
 
   return (

@@ -1,58 +1,48 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useBlogs } from "../context/BlogsContext";
 import RanderUserCreatedBlogs from "../components/userElements/profile/randerUserCreatedBlogs";
-import { useFavouriteBlogs } from "../context/UsersFavouriteBlogContext";
-import { useLikedBlogs } from "../context/UsersLikedBlogContext";
+import { setAllUsersFavouriteBlogs, setAllUsersLikedBlogs, setBlogs } from "../redux/rootSlice";
+import { useDispatch, useSelector } from "react-redux";
+
 function Profile() {
-  const { blogs, setBlogs } = useBlogs();
+
   const [deleteButtonClicked, setDeleteButtonClicked] = useState(false);
   const [idForDeleteBlog, setIdForDeleteBlog] = useState("");
-  const { allUsersFavouriteBlogs, setAllUsersFavouriteBlogs } =
-    useFavouriteBlogs();
-  const { allUserslikedBlogs, setAllUsersLikedBlogs } = useLikedBlogs();
   const [editedBlog, setEditedBlog] = useState({});
   const [saveEditedBlog, setSaveEditedBlog] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const currentSessionUser = JSON.parse(
     localStorage.getItem("currentSessionUser")
   );
   const handleCreateNewBlog = () => {
     navigate("/newBlog");
   };
+  let updatedBlogs = JSON.parse(JSON.stringify(useSelector((state)=> state.rootSlice.blogs)));
+  let updatedAllUsersFavouriteBlogs = { ...useSelector((state)=>state.rootSlice.allUsersFavouriteBlogs)};
+  let updatedAllUsersLikedBlogs = { ...useSelector((state)=>state.rootSlice.allUsersLikedBlogs) };
   useEffect(() => {
     if (saveEditedBlog) {
-      let updatedBlogs = blogs;
+      
       let currentUsersAllBlogs = updatedBlogs[currentSessionUser].map((blog) =>
         blog.id === editedBlog.id ? editedBlog : blog
       );
       updatedBlogs[currentSessionUser] = currentUsersAllBlogs;
-      localStorage.setItem("blogs", JSON.stringify(updatedBlogs));
-      setBlogs(updatedBlogs);
+      dispatch(setBlogs(updatedBlogs));
 
-      let updatedAllUsersFavouriteBlogs = { ...allUsersFavouriteBlogs };
       for (let user in updatedAllUsersFavouriteBlogs) {
         updatedAllUsersFavouriteBlogs[user] = updatedAllUsersFavouriteBlogs[
           user
         ].map((blog) => (blog.id === editedBlog.id ? editedBlog : blog));
       }
-      setAllUsersFavouriteBlogs(updatedAllUsersFavouriteBlogs);
-      localStorage.setItem(
-        "allUsersFavouriteBlogs",
-        JSON.stringify(updatedAllUsersFavouriteBlogs)
-      );
+      dispatch(setAllUsersFavouriteBlogs(updatedAllUsersFavouriteBlogs));
 
-      let updatedAllUsersLikedBlogs = { ...allUserslikedBlogs };
       for (let user in updatedAllUsersLikedBlogs) {
         updatedAllUsersLikedBlogs[user] = updatedAllUsersLikedBlogs[user].map(
           (blog) => (blog.id === editedBlog.id ? editedBlog : blog)
         );
       }
-      setAllUsersLikedBlogs(updatedAllUsersLikedBlogs);
-      localStorage.setItem(
-        "allUsersLikedBlogs",
-        JSON.stringify(updatedAllUsersLikedBlogs)
-      );
+      dispatch(setAllUsersLikedBlogs(updatedAllUsersLikedBlogs));
 
       setSaveEditedBlog(false);
       setEditedBlog({});
@@ -61,43 +51,32 @@ function Profile() {
 
   useEffect(() => {
     if (deleteButtonClicked) {
-      let updatedBlogs = blogs;
       let updatedCurrentSessionUserBlogs = updatedBlogs[
         currentSessionUser
       ].filter((blog) => blog.id !== idForDeleteBlog);
       updatedBlogs[currentSessionUser] = updatedCurrentSessionUserBlogs;
-      localStorage.setItem("blogs", JSON.stringify(updatedBlogs));
-      setBlogs(updatedBlogs);
+      dispatch(setBlogs(updatedBlogs));
 
-      let updatedAllUsersFavouriteBlogs = { ...allUsersFavouriteBlogs };
       for (let user in updatedAllUsersFavouriteBlogs) {
         updatedAllUsersFavouriteBlogs[user] = updatedAllUsersFavouriteBlogs[
           user
         ].filter((blog) => blog.id !== idForDeleteBlog);
       }
-      setAllUsersFavouriteBlogs(updatedAllUsersFavouriteBlogs);
-      localStorage.setItem(
-        "allUsersFavouriteBlogs",
-        JSON.stringify(updatedAllUsersFavouriteBlogs)
-      );
+      dispatch(setAllUsersFavouriteBlogs(updatedAllUsersFavouriteBlogs));
 
-      let updatedAllUsersLikedBlogs = { ...allUserslikedBlogs };
+      let updatedAllUsersLikedBlogs = { ...useSelector((state)=> state.rootSlice.allUsersLikedBlogs) };
       for (let user in updatedAllUsersLikedBlogs) {
         updatedAllUsersLikedBlogs[user] = updatedAllUsersLikedBlogs[
           user
         ].filter((blog) => blog.id !== idForDeleteBlog);
       }
-      setAllUsersLikedBlogs(updatedAllUsersLikedBlogs);
-      localStorage.setItem(
-        "allUsersLikedBlogs",
-        JSON.stringify(updatedAllUsersLikedBlogs)
-      );
+      dispatch(setAllUsersLikedBlogs(updatedAllUsersLikedBlogs));
 
       setDeleteButtonClicked(false);
       setIdForDeleteBlog("");
     }
   }, [idForDeleteBlog, deleteButtonClicked]);
-
+  const blogs = useSelector((state)=> state.rootSlice.blogs);
   return (
     <div className="p-6 bg-gray-100 rounded-lg shadow-md max-w-7xl mx-auto">
       <button

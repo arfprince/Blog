@@ -1,10 +1,10 @@
-import { useFavouriteBlogs } from "../context/UsersFavouriteBlogContext";
 import RanderFavourites from "../components/userElements/favourites/randerFavourites";
 import { useEffect, useState } from "react";
-
+import { setAllUsersFavouriteBlogs } from "../redux/rootSlice";
+import { useDispatch, useSelector } from "react-redux";
 export default function Favourites() {
-  const { allUsersFavouriteBlogs, setAllUsersFavouriteBlogs } =
-    useFavouriteBlogs();
+  const dispatch = useDispatch();
+  const allUsersFavouriteBlogs = useSelector((state)=> state.rootSlice.allUsersFavouriteBlogs);
   const currentSessionUser = JSON.parse(
     localStorage.getItem("currentSessionUser")
   );
@@ -19,11 +19,8 @@ export default function Favourites() {
       ...allUsersFavouriteBlogs,
       [currentSessionUser]: userFavourites,
     };
-    setAllUsersFavouriteBlogs(updatedFavourites);
-    localStorage.setItem(
-      "allUsersFavouriteBlogs",
-      JSON.stringify(updatedFavourites)
-    );
+    dispatch(setAllUsersFavouriteBlogs(updatedFavourites));
+    
     setRemoveFavourite(false);
     setDeletedFavBlogId("");
   }, [removeFavourite, deletedFavBlogId]);

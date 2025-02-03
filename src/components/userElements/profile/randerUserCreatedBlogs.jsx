@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { useBlogs } from "../../../context/BlogsContext";
-import { useFavouriteBlogs } from "../../../context/UsersFavouriteBlogContext";
-import { useLikedBlogs } from "../../../context/UsersLikedBlogContext";
 import ReactTimeAgo from "react-time-ago";
+import { useDispatch, useSelector } from "react-redux";
+import { setAllUsersFavouriteBlogs, setAllUsersLikedBlogs, setBlogs } from "../../../redux/rootSlice";
 
 export default function RanderUserCreatedBlogs({
   blog,
@@ -15,57 +14,42 @@ export default function RanderUserCreatedBlogs({
 }) {
   const [showMore, setShowMore] = useState(false);
   const [status, setStatus] = useState(blog.status);
-  const { setBlogs } = useBlogs();
-  const { allUsersFavouriteBlogs, setAllUsersFavouriteBlogs } = useFavouriteBlogs();
-  const { allUserslikedBlogs, setAllUsersLikedBlogs } = useLikedBlogs();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState({
     title: "",
     image: "",
     content: ""
   });
-  
+  const dispatch = useDispatch();
+  const allBlogs = JSON.parse(JSON.stringify(useSelector((state)=> state.rootSlice.blogs)));
+  let updatedAllUsersFavouriteBlogs = { ...useSelector((state)=>state.rootSlice.allUsersFavouriteBlogs)};
+  let updatedAllUsersLikedBlogs = { ...useSelector((state)=>state.rootSlice.allUsersLikedBlogs) };
+  let currentSessionUser = useSelector((state)=>state.auth.currentSessionUser);
   const toggleStatus = () => {
     const newStatus = status === "public" ? "private" : "public";
     setStatus(newStatus);
-
-    const allBlogs = JSON.parse(localStorage.getItem("blogs")) || {};
-    const currentSessionUser = JSON.parse(
-      localStorage.getItem("currentSessionUser")
-    );
+    
     if (allBlogs[currentSessionUser]) {
       allBlogs[currentSessionUser] = allBlogs[currentSessionUser].map((b) =>
         b.id === blog.id ? { ...b, status: newStatus } : b
       );
-      setBlogs(allBlogs);
-      localStorage.setItem("blogs", JSON.stringify(allBlogs));
+      dispatch(setBlogs(allBlogs));
     }
-
-    // Update users' favorite blogs
-    let updatedAllUsersFavouriteBlogs = { ...allUsersFavouriteBlogs };
+    
     for (let user in updatedAllUsersFavouriteBlogs) {
       let perUserBlogs = updatedAllUsersFavouriteBlogs[user];
       perUserBlogs = perUserBlogs.filter((b) => b.id !== blog.id);
       updatedAllUsersFavouriteBlogs[user] = perUserBlogs;
     }
-    setAllUsersFavouriteBlogs(updatedAllUsersFavouriteBlogs);
-    localStorage.setItem(
-      "allUsersFavouriteBlogs",
-      JSON.stringify(updatedAllUsersFavouriteBlogs)
-    );
+    dispatch(setAllUsersFavouriteBlogs(updatedAllUsersFavouriteBlogs));
 
     // Update users' liked blogs
-    let updatedAllUsersLikedBlogs = { ...allUserslikedBlogs };
     for (let user in updatedAllUsersLikedBlogs) {
       let perUserBlogs = updatedAllUsersLikedBlogs[user];
       perUserBlogs = perUserBlogs.filter((b) => b.id !== blog.id);
       updatedAllUsersLikedBlogs[user] = perUserBlogs;
     }
-    setAllUsersLikedBlogs(updatedAllUsersLikedBlogs);
-    localStorage.setItem(
-      "allUsersLikedBlogs",
-      JSON.stringify(updatedAllUsersLikedBlogs)
-    );
+    dispatch(setAllUsersLikedBlogs(updatedAllUsersLikedBlogs));
   };
 
   const validateField = (name, value) => {
@@ -108,7 +92,6 @@ export default function RanderUserCreatedBlogs({
   };
 
   const handleSave = () => {
-    // Validate all fields before saving
     const newErrors = {
       title: validateField("title", editedBlog.title),
       image: validateField("image", editedBlog.image),

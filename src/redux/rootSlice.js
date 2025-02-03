@@ -33,11 +33,12 @@ const rootSlice = createSlice({
 });
 
 export const {
-
   setBlogs,
   setSingleDetailedBlog,
   setAllUsersFavouriteBlogs,
   setAllUsersLikedBlogs,
 } = rootSlice.actions;
+
+
 
 export default rootSlice.reducer;

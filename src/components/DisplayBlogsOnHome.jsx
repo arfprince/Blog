@@ -1,46 +1,50 @@
 import React, { useState, useEffect } from "react";
 import ReactTimeAgo from "react-time-ago";
-import { useFavouriteBlogs } from "../context/UsersFavouriteBlogContext";
-import { useLikedBlogs } from "../context/UsersLikedBlogContext";
-import { useBlogs } from "../context/BlogsContext";
 import { Link } from "react-router-dom";
+import {
+  setAllUsersFavouriteBlogs,
+  setAllUsersLikedBlogs,
+  setBlogs,
+  setSingleDetailedBlog,
+} from "../redux/rootSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 function DisplayBlogsOnHome({ blog }) {
-  const [showMore, setShowMore] = useState(false);
-  const { allUsersFavouriteBlogs, setAllUsersFavouriteBlogs } =
-    useFavouriteBlogs();
-  const { allUserslikedBlogs, setAllUsersLikedBlogs } = useLikedBlogs();
-  const { blogs, setBlogs, setSingleDetailedBlog } = useBlogs();
+  const dispatch = useDispatch();
   const [isFavourite, setIsFavourite] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
-  const currentSessionUser = JSON.parse(
-    localStorage.getItem("currentSessionUser")
+
+  const currentSessionUser = useSelector(
+    (state) => state.auth.currentSessionUser
   );
+  const allUsersFavouriteBlogs = useSelector(
+    (state) => state.rootSlice.allUsersFavouriteBlogs
+  );
+  const allUsersLikedBlogs = useSelector(
+    (state) => state.rootSlice.allUsersLikedBlogs
+  );
+  const blogs = useSelector((state) => state.rootSlice.blogs);
 
   useEffect(() => {
     const userFavourites = allUsersFavouriteBlogs[currentSessionUser] || [];
     setIsFavourite(userFavourites.some((fav) => fav.id === blog.id));
-    const userLikedBlogs = allUserslikedBlogs[currentSessionUser] || [];
+
+    const userLikedBlogs = allUsersLikedBlogs[currentSessionUser] || [];
     setIsLiked(userLikedBlogs.some((liked) => liked.id === blog.id));
-  }, [allUsersFavouriteBlogs, allUserslikedBlogs, blog.id, currentSessionUser]);
+  }, [allUsersFavouriteBlogs, allUsersLikedBlogs, blog.id, currentSessionUser]);
 
   const toggleFavourite = () => {
     let userFavourites = allUsersFavouriteBlogs[currentSessionUser] || [];
     if (isFavourite) {
       userFavourites = userFavourites.filter((fav) => fav.id !== blog.id);
     } else {
-      userFavourites.push(blog);
+      userFavourites = [...userFavourites, blog];
     }
     const updatedFavourites = {
       ...allUsersFavouriteBlogs,
       [currentSessionUser]: userFavourites,
     };
-    setAllUsersFavouriteBlogs(updatedFavourites);
-    localStorage.setItem(
-      "allUsersFavouriteBlogs",
-      JSON.stringify(updatedFavourites)
-    );
-
+    dispatch(setAllUsersFavouriteBlogs(updatedFavourites));
     setIsFavourite(!isFavourite);
   };
 
@@ -49,33 +53,26 @@ function DisplayBlogsOnHome({ blog }) {
       ...blog,
       likeCount: isLiked ? blog.likeCount - 1 : blog.likeCount + 1,
     };
-    let userLikedBlogs = allUserslikedBlogs[currentSessionUser] || [];
 
+    let userLikedBlogs = allUsersLikedBlogs[currentSessionUser] || [];
     if (isLiked) {
       userLikedBlogs = userLikedBlogs.filter((liked) => liked.id !== blog.id);
     } else {
-      userLikedBlogs.push(updatedCurrentBlog);
+      userLikedBlogs = [...userLikedBlogs, updatedCurrentBlog];
     }
+
     let likedBloggerBlogs = blogs[blog.userName] || [];
     let updatedLikedBloggerBlogs = likedBloggerBlogs.map((b) =>
       b.id === blog.id ? updatedCurrentBlog : b
     );
 
-    setBlogs({ ...blogs, [blog.userName]: updatedLikedBloggerBlogs });
-    localStorage.setItem(
-      "blogs",
-      JSON.stringify({ ...blogs, [blog.userName]: updatedLikedBloggerBlogs })
-    );
+    dispatch(setBlogs({ ...blogs, [blog.userName]: updatedLikedBloggerBlogs }));
 
     const updatedLikedBlogs = {
-      ...allUserslikedBlogs,
+      ...allUsersLikedBlogs,
       [currentSessionUser]: userLikedBlogs,
     };
-    setAllUsersLikedBlogs(updatedLikedBlogs);
-    localStorage.setItem(
-      "allUsersLikedBlogs",
-      JSON.stringify(updatedLikedBlogs)
-    );
+    dispatch(setAllUsersLikedBlogs(updatedLikedBlogs));
 
     setIsLiked(!isLiked);
   };
@@ -107,9 +104,7 @@ function DisplayBlogsOnHome({ blog }) {
         </span>
       </div>
 
-      <p className="text-gray-600 mt-3">
-        {showMore ? blog.content : `${blog.content.substring(0, 100)}...`}
-      </p>
+      <p className="text-gray-600 mt-3">{blog.content.substring(0, 100)}...</p>
       {/* <button
         onClick={() => setShowMore(!showMore)}
         className="text-blue-500 mt-2 font-medium hover:underline"
@@ -119,7 +114,7 @@ function DisplayBlogsOnHome({ blog }) {
       <Link
         to={`/${blog.id}`} // Dynamically use the blog.id for the URL
         className="text-blue-500 mt-2 font-medium hover:underline"
-        onClick={()=> setSingleDetailedBlog(blog)}
+        onClick={() => dispatch(setSingleDetailedBlog(blog))}
       >
         Show Details
       </Link>

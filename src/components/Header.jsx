@@ -1,18 +1,19 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useEffect } from "react";
+import { logout } from "../redux/authSlice";
+import { useSelector, useDispatch } from "react-redux";
 
 export default function Header() {
-  const { isLoggedIn, setIsLoggedIn } = useAuth();
+  const isLoggedIn = useSelector((state)=> state.auth.isLoggedIn)
   const navigate = useNavigate();
-  
+  const dispatch = useDispatch();
   const handleLogOutClick = () => {
-    setIsLoggedIn(false);
+    dispatch(logout());
     localStorage.removeItem("currentSessionUser");
     localStorage.setItem("isLoggedIn", false);
     navigate("/login");
-  };
+  };  
 
+  const currentSessionUser = useSelector((state)=> state.auth.currentSessionUser) || {};
   return (
     <header className="bg-gradient-to-r from-blue-900 to-orange-500 text-white p-4 flex justify-between items-center shadow-lg flex-wrap">
       <h1 className="text-2xl font-extrabold sm:text-xl md:text-2xl lg:text-3xl">My Blog</h1>
@@ -23,9 +24,7 @@ export default function Header() {
               <h1 className="text-lg sm:text-base">
                 Welcome to Blog{" "}
                 <span className="font-bold text-blue-800">
-                  {JSON.parse(localStorage.getItem("currentSessionUser"))
-                    .toLocaleUpperCase()
-                    .split("@")[0]}
+                  {currentSessionUser?.toLocaleUpperCase().split("@")[0]}
                 </span>
               </h1>
               <Link

@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useBlogs } from "../../../context/BlogsContext";
+import { setBlogs } from "../../../redux/rootSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function CreateNewBlog() {
-  const { blogs, setBlogs } = useBlogs();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const blogs = useSelector((state) => state.rootSlice.blogs);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState("");
@@ -105,13 +107,12 @@ export default function CreateNewBlog() {
       id: `${title}${Math.floor(Math.random() * 1000000000 + 1)}`,
       userName: currentSessionUser,
     };
-
-    let updatedBlogs = blogs;
-    const currentSessionUserBlogs = updatedBlogs[currentSessionUser] || [];
-    currentSessionUserBlogs.push(newBlog);
+    const updatedBlogs = {...blogs };
+    let currentSessionUserBlogs = updatedBlogs[currentSessionUser] || [];
+    currentSessionUserBlogs = [...currentSessionUserBlogs, newBlog];
     updatedBlogs[currentSessionUser] = currentSessionUserBlogs;
-    localStorage.setItem("blogs", JSON.stringify(updatedBlogs));
-    setBlogs(updatedBlogs);
+    dispatch(setBlogs(updatedBlogs));
+    
     setTitle("");
     setContent("");
     setImage("");

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useSelector,useDispatch } from 'react-redux';
+import { login } from '../redux/authSlice';
 
 export default function Login() {
   const navigate = useNavigate(); 
+  const dispatch = useDispatch();
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const { isLoggedIn, setIsLoggedIn } = useAuth();
+  const isLoggedIn = useSelector((state)=> state.auth.isLoggedIn);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -33,9 +35,7 @@ export default function Login() {
       alert("Invalid username or password or Create a new account");
       return;
     } else if (users[email].password === password && users[email].email === email) {
-      localStorage.setItem("currentSessionUser", JSON.stringify(email));
-      setIsLoggedIn(true);
-      localStorage.setItem("isLoggedIn", true);
+      dispatch(login(email));
     }
   };
 

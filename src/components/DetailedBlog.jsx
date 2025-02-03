@@ -1,12 +1,10 @@
 import React from 'react'
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom'
-import { useBlogs } from '../context/BlogsContext'
 import ReactTimeAgo from 'react-time-ago'
 
 function DetailedBlog() {
-    const { singleDetailedBlog } = useBlogs();
-    console.log(singleDetailedBlog);
-
+    const singleDetailedBlog  = useSelector((state)=> state.rootSlice.singleDetailedBlog);
     if (!singleDetailedBlog) {
         return <div className="text-center text-lg text-gray-600">Blog not found</div>;
     }

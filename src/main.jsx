@@ -21,6 +21,7 @@ import LastTenLikes from './pages/LastTenLikes.jsx'
 import PrivateRoute from "./Authentication/PrivateRoutes.jsx";
 import Home from './pages/Home.jsx'
 import CreateNewBlog from "./components/userElements/profile/CreateNewBlog.jsx";
+import DetailedBlog from "./components/DetailedBlog.jsx";
 const routes = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />}>
@@ -36,14 +37,14 @@ const routes = createBrowserRouter(
         }
       />
 
-      {/* <Route
+      <Route
         path="/:id"
         element={
           <PrivateRoute>
             <DetailedBlog />
           </PrivateRoute>
         }
-      /> */}
+      />
 
       <Route
         path="/profile"
